@@ -204,13 +204,26 @@ class Masking(MaskedLayer):
         self.mask_value = mask_value
         self.input = T.tensor3()
 
+    #the masks == [1 1 1 1 0 0 0 0]
     def get_output_mask(self, train=False):
-        X = self.get_input(train)
+        X = self.get_input(train) # X.shape=(instance, time, input_dim)
         return T.any(T.ones_like(X) * (1. - T.eq(X, self.mask_value)), axis=-1)
+        # get_output_mask always returns # (instance, time)
+        
+        # check the 'mask_value=0' elements as 0. [3 3 2 1 0 0 0 0] -> [0 0 0 0 1 1 1 1] 
+        # and '1-this' => [1 1 1 1 0 0 0 0] == (1. - T.eq(X, self.mask_value))
+        # then T.onelike(X)*[1 1 1 1 0 0 0 0] ==> why is this needed?  anyway '*' is element wise mutiplication. and T.dot() is dot product.
+        # T.any( along last axis ). bitwise or for axis=-1 => last axis is input_dimension
+        # so it check that the all input dim == mask_value. If there is one non-zero vlaue. it returns 1 and this mean a data. and 0 means non-data
+    
+        # any() is (bitwise or)
 
     def get_output(self, train=False):
-        X = self.get_input(train)
-        return X * T.shape_padright(T.any((1. - T.eq(X, self.mask_value)), axis=-1))
+        X = self.get_input(train) # X.shape=(instance, time, input_dim)
+        return X * T.shape_padright(T.any((1. - T.eq(X, self.mask_value)), axis=-1)) # T.any is something like sum. but it is just 'or' calcuation
+        # T.shape_padright(T.any((1. - T.eq(X, self.mask_value)), axis=-1)).shape == (instance, time)
+        # shape_padright(K).shape = (K.shape, 1). this adds a new dimension on the right side of the tensor
+        # so, X * this(element-wise) ==>  X(instance, time, input_dim) * (instance, time, 1). 1 is broadcastable
 
     def get_config(self):
         config = {"name": self.__class__.__name__,
@@ -484,6 +497,7 @@ class Flatten(Layer):
     @property
     def output_shape(self):
         input_shape = self.input_shape
+        print ('flatten:',(input_shape[0], np.prod(input_shape[1:])))
         return (input_shape[0], np.prod(input_shape[1:]))
 
     def get_output(self, train=False):
@@ -551,8 +565,15 @@ class Dense(Layer):
         super(Dense, self).__init__(**kwargs)
 
     def build(self):
+#        if self.input_dim is None:
+#            input_dim = self.input_shape[1]
+#        else:
+#            input_dim = self.input_dim
+#        input_dim = 720
+#        print self.input_shape
+    
+    
         input_dim = self.input_shape[1]
-
         self.input = T.matrix()
         self.W = self.init((input_dim, self.output_dim))
         self.b = shared_zeros((self.output_dim,))

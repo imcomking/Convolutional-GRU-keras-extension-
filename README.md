@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Keras: Theano-based Deep Learning library
 
 ## You have just found Keras.
@@ -235,3 +236,21 @@ Keras (κέρας) means _horn_ in Greek. It is a reference to a literary image 
 Keras was developed as part of the research effort of project ONEIROS (Open-ended Neuro-Electronic Intelligent Robot Operating System).
 
 >_"Oneiroi are beyond our unravelling --who can be sure what tale they tell? Not all that men look for comes to pass. Two gates there are that give passage to fleeting Oneiroi; one is made of horn, one of ivory. The Oneiroi that pass through sawn ivory are deceitful, bearing a message that will not be fulfilled; those that come out through polished horn have truth behind them, to be accomplished for men who see them."_ Homer, Odyssey 19. 562 ff (Shewring translation).
+=======
+# Convolutional-GRU-keras-extension-
+This is based on keras version='0.2.0'
+
+Hello.
+
+I was trying to build a Convolutional Gated Recurrent Unit (ConvGRU).
+
+But few days ago, the keras made a big update to cover the tensorflow backend. (0.2 -> 0.3)
+
+And there ware too huge changes, so I can't follow these by myself. 
+
+So I upload my all dirty source code. But it is really working.
+
+Anybody who are interested in ConvGRU, Please do contribute.
+
+Thank you.
+>>>>>>> 6539f01013d38eaac33bd05b93aef2127ea68de9

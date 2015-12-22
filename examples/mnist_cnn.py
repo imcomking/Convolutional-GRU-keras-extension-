@@ -3,11 +3,13 @@ from __future__ import print_function
 import numpy as np
 np.random.seed(1337)  # for reproducibility
 
-from keras.datasets import mnist
-from keras.models import Sequential
-from keras.layers.core import Dense, Dropout, Activation, Flatten
-from keras.layers.convolutional import Convolution2D, MaxPooling2D
-from keras.utils import np_utils
+import sys
+sys.path.append('../../keras')
+from kerasR.datasets import mnist
+from kerasR.models import Sequential
+from kerasR.layers.core import Dense, Dropout, Activation, Flatten
+from kerasR.layers.convolutional import Convolution2D, MaxPooling2D
+from kerasR.utils import np_utils
 
 '''
     Train a simple convnet on the MNIST dataset.

@@ -20,20 +20,21 @@ class Recurrent(MaskedLayer):
             return None
 
     def get_padded_shuffled_mask(self, train, X, pad=0):
-        mask = self.get_input_mask(train)
-        if mask is None:
-            mask = T.ones_like(X.sum(axis=-1))  # is there a better way to do this without a sum?
+        mask = self.get_input_mask(train) # defaultly masking == (instance, time) the masks == [1 1 1 1 0 0 0 0]
+        if mask is None: # if there is no previous layer, then masking is None. so we need to make masking from X == (instance, time, input_dim)
+            mask = T.ones_like(X.sum(axis=-1)) # so T.ones_like(X.sum) == ones of (instance, time) # is there a better way to do this without a sum?
+            # masking == (instance, time) => [1 1 1 1 1 1 1 1 ]. no zeros in masking
 
-        # mask is (nb_samples, time)
-        mask = T.shape_padright(mask)  # (nb_samples, time, 1)
-        mask = T.addbroadcast(mask, -1)  # the new dimension (the '1') is made broadcastable
+        mask = T.shape_padright(mask)  # (instance, time, 1). # this just add new dimension which is broadcastable.
+        mask = T.addbroadcast(mask, -1)  # the new dimension (the '1') is made broadcastable # Actually, it is not necessary
         # see http://deeplearning.net/software/theano/library/tensor/basic.html#broadcasting-in-theano-vs-numpy
-        mask = mask.dimshuffle(1, 0, 2)  # (time, nb_samples, 1)
+        mask = mask.dimshuffle(1, 0, 2)  # (time, instance, 1)
 
-        if pad > 0:
-            # left-pad in time with 0
-            padding = alloc_zeros_matrix(pad, mask.shape[1], 1)
-            mask = T.concatenate([padding, mask], axis=0)
+        if pad > 0: # if pad = 3, then we gonna add three '0 paddings' for left side.
+            # left-pad in time with 0 
+            padding = alloc_zeros_matrix(pad, mask.shape[1], 1) # alloc zeros matrix shaped as (3, nb_samples, 1)
+            mask = T.concatenate([padding, mask], axis=0) # (3, nbsamples, 1) + (time, nb_samples, 1) = (3 + time, nb_samples, 1). and 1 is broadcastable
+            # so the pad = 1 means left 1 padding? for what?
         return mask.astype('int8')
 
     @property
@@ -87,9 +88,9 @@ class SimpleRNN(Recurrent):
         '''
             Variable names follow the conventions from:
             http://deeplearning.net/software/theano/library/scan.html
-
         '''
         return self.activation(x_t + mask_tm1 * T.dot(h_tm1, u))
+        # output.shape = (nb_samples, output_dim) in all iterations
 
     def get_output(self, train=False):
         X = self.get_input(train)  # shape: (nb_samples, time (padded with zeros), input_dim)
@@ -97,6 +98,9 @@ class SimpleRNN(Recurrent):
         padded_mask = self.get_padded_shuffled_mask(train, X, pad=1)
         X = X.dimshuffle((1, 0, 2))
         x = T.dot(X, self.W) + self.b
+        # X*W to all samples
+        # x.shape = (time, nb_samples, output_dim)
+        # input x's time axis doesn't exist in step fun
 
         # scan = theano symbolic loop.
         # See: http://deeplearning.net/software/theano/library/scan.html

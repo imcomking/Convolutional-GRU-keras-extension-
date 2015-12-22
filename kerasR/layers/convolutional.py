@@ -188,7 +188,7 @@ class Convolution2D(Layer):
         self.activation = activations.get(activation)
         self.border_mode = border_mode
         self.subsample = tuple(subsample)
-
+        
         self.W_regularizer = regularizers.get(W_regularizer)
         self.b_regularizer = regularizers.get(b_regularizer)
         self.activity_regularizer = regularizers.get(activity_regularizer)
@@ -234,6 +234,8 @@ class Convolution2D(Layer):
         cols = conv_output_length(cols, self.nb_col, self.border_mode, self.subsample[1])
         return (input_shape[0], self.nb_filter, rows, cols)
 
+        # X =((instance, channel, row, col))
+        # self.W_shape = (self.nb_filter, stack_size, self.nb_row, self.nb_col)
     def get_output(self, train=False):
         X = self.get_input(train)
         border_mode = self.border_mode
